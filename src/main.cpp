@@ -17,7 +17,9 @@ int main(int argc, char* argv[]) {
     }
 
     // Ler o grafo
-    
+    Grafo g;
+    g.leGrafo(in);
+    g.Imprime();
 
     // Dijkstra de 1 ate N (praca ao parque)
 

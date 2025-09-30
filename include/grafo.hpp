@@ -12,7 +12,11 @@
 #include <fstream> // Para Grafo::leGrafo()
 #include <iostream>
 
-#include <vector> // Para representacao do grafo
+// Para representacao do grafo
+#include <vector> 
+#include <utility> // Para std::pair
+#include <queue> // Para fila de prioridade dos vertices do grafo
+#include <functional> // Para std::greater
 
 using TipoV = int;
 
@@ -21,10 +25,22 @@ public:
     Grafo();
     Grafo(int n, int m);
 
+    void leGrafo(std::ifstream &in);
+    void adicionaAresta(TipoV v, TipoV u, int peso);
+
+    // Algoritmo de Dijkstra para caminho minimo entre 2 vertices
+    int CaminhoMin(TipoV v, TipoV u);
+
+    void Imprime();
+
 private:
-    int numArestas;
     int numVertices;
-    std::vector<std::vector<TipoV>> arestas;
+    int numArestas;
+    std::vector<std::vector<std::pair<TipoV, int>>> arestas;
+
+    // metodos internos para seguranca
+    bool validaVertice(TipoV v);
+    bool existeAresta(TipoV v, TipoV u);
 };
 
 #endif
