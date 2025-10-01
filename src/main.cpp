@@ -22,7 +22,8 @@ int main(int argc, char* argv[]) {
     g.Imprime();
 
     // Dijkstra de 1 ate N (praca ao parque)
-
+    std::cout << g.CaminhoMin(1, g.getN()) << std::endl;
+    std::cout << g.getN();
 
     return 0;
 }

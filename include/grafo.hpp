@@ -33,6 +33,8 @@ public:
 
     void Imprime();
 
+    int getN();
+
 private:
     int numVertices;
     int numArestas;
