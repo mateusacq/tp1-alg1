@@ -19,11 +19,19 @@ int main(int argc, char* argv[]) {
     // Ler o grafo
     Grafo g;
     g.leGrafo(in);
-    g.Imprime();
 
     // Dijkstra de 1 ate N (praca ao parque)
-    std::cout << g.CaminhoMin(1, g.getN()) << std::endl;
-    std::cout << g.getN();
+    int distancia_minima = g.CaminhoMin(1, g.getN());
+    std::cout << "Parte 1: " << distancia_minima << std::endl;
+
+    std::cout << "Parte 2: ";
+    std::vector<int> ruas_candidatas = g.Parte2();
+    for (auto it : ruas_candidatas) {
+        std::cout << it << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Parte 3: ";
 
     return 0;
 }
