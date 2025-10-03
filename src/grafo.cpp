@@ -2,11 +2,11 @@
 
 Grafo::Grafo() 
     : numVertices(0), numArestas(0), 
-    adj(1), arestas(1) {}
+    adjacencia(1), arestas(1) {}
 
 Grafo::Grafo(int n, int m) 
     : numVertices(n), numArestas(m), 
-    adj(n + 1), arestas(m) {}
+    adjacencia(n + 1), arestas(m) {}
 
 // i = indice da aresta, util para partes 2 e 3
 void Grafo::adicionaAresta(TipoV v, TipoV u, int peso, int i) {
@@ -15,21 +15,22 @@ void Grafo::adicionaAresta(TipoV v, TipoV u, int peso, int i) {
     a.peso = peso; a.indice = i;
     
     arestas.push_back(a);
-    adj[v].push_back({u, peso});
+    adjacencia[v].push_back({u, peso});
     
-    b.v = u; b.u = v; // Bidirecionado
+    // Grafo nao direcionado, portanto, arestas nos dois sentidos:
+    b.v = u; b.u = v; 
     b.peso = peso; b.indice = i;
 
     arestas.push_back(b);
-    adj[u].push_back({v, peso});
+    adjacencia[u].push_back({v, peso});
 }
 
 void Grafo::leGrafo(std::ifstream &in) {
-    // le dimensoes
+    // Le dimensoes
     in >> numVertices >> numArestas;
 
     // Redimensionamento para n + 1 pois vertices estao indexados em 1
-    adj.resize(numVertices + 1);
+    adjacencia.resize(numVertices + 1);
 
     for (int i = 1; i <= numArestas; i++) {
         TipoV v, u;
@@ -55,7 +56,7 @@ bool Grafo::existeAresta(TipoV v, TipoV u) {
     if (!validaVertice(v) || !validaVertice(u)) {
         return existe;
     }
-    for (auto it : adj[v]) {
+    for (auto it : adjacencia[v]) {
         if (it.second == u) {
             existe = true;
         }
@@ -66,7 +67,7 @@ bool Grafo::existeAresta(TipoV v, TipoV u) {
 void Grafo::Imprime() {
     std::cout << "arestas1 de g:" << std::endl;
     for (int i = 1; i <= numVertices; i++) {
-        for (auto it : adj[i]) {
+        for (auto it : adjacencia[i]) {
             std::cout << i << " "
                       << it.first << " "
                       << it.second 
@@ -75,55 +76,54 @@ void Grafo::Imprime() {
     }   
 }
 
-// Vertices armazenados na ordem {peso, {vertice, indice_aresta}} para Dijkstra
-using P_E = std::pair<int, TipoV>;
-int Grafo::CaminhoMin(TipoV source, TipoV u) {
-    // Min-Heap que coloca a aresta com menor distancia estimada no topo:
-    std::priority_queue<P_E, std::vector<P_E>, std::greater<P_E>> minHeap;
+// Vertices armazenados na ordem {peso, vertice} para Dijkstra
+int Grafo::CaminhoMin(TipoV origem, TipoV destino) {
+    // Fila de prioridade com arestas ordenadas em ordem de peso crescente
+    Heap minHeap;
 
     // Inicializa vetor de distancias estimadas
-    int INFINITY = 2147483647; // 2^31 - 1
+    int INFINITY = 2147483647; // 2^31 - 1 = INT_MAX
     std::vector<int> dist(numVertices + 1);
     for (int i = 1; i <= numVertices; i++) {
         dist[i] = INFINITY;
     }
 
     // Vertice de origem:
-    minHeap.push({0, source});
-    dist[source] = 0;
+    minHeap.push({0, origem});
+    dist[origem] = 0;
 
     while (!minHeap.empty()) {
-        // Salva dados da aresta de menor distancia conhecida:
+        // Analisa vertice com menor distancia estimada:
         int peso_atual = minHeap.top().first;
-        TipoV v = minHeap.top().second;
+        TipoV v_atual = minHeap.top().second;
         
         minHeap.pop();
-        // Ignora copiasa de v com peso obsoleto no minHeap
-        if (peso_atual > dist[v]) {
+        // Ignora copias de v com peso obsoleto no minHeap
+        if (peso_atual > dist[v_atual]) {
             continue;
         }
 
-        // Encontramos a distancia ate u quando vale:
-        if (v == u) {
-            return dist[u];
+        // Verifica se destino foi alcancado
+        if (v_atual == destino) {
+            return dist[destino];
         }
 
-        for (auto const& it : adj[v]) {
-            // as arestasa[v] armazena {adjacente, peso_aresta}
-            TipoV u_vizinho = it.first;
+        for (auto const& it : adjacencia[v_atual]) {
+            // arestas[v] armazena {v_adjacente, peso_aresta}
+            TipoV vizinho = it.first;
             int peso_aresta = it.second;
 
-            if (peso_atual + peso_aresta < dist[u_vizinho]) {
-                minHeap.push({peso_atual + peso_aresta, u_vizinho});
-                dist[u_vizinho] = peso_atual + peso_aresta; // Atualiza estimativa
+            if (peso_atual + peso_aresta < dist[vizinho]) {
+                minHeap.push({peso_atual + peso_aresta, vizinho});
+                dist[vizinho] = peso_atual + peso_aresta; // Atualiza estimativa
             }
         }
     }
 
-    // Se "u" estiver em uma componente conexa do grafo diferente
+    // Se "destino" estiver em uma componente conexa do grafo diferente
     // da de "source", este return retorna uma dist == INFINITY,
     // que ha de ser tratada no codigo.
-    return dist[u];
+    return dist[destino];
 }
 
 std::vector<int> Grafo::Parte2() {
@@ -138,24 +138,85 @@ std::vector<int> Grafo::Parte2() {
     }
     
     int d = dist_de_1[N];
-    std::vector<int> dist_min;
+    std::vector<int> arestas_otimas;
     // Verifica quais fazem parte de algum caminho minimo entre 1 e N,
     // usando a propriedade dos caminhos intermediarios
     for (auto it : arestas) {
         if ((dist_de_1[it.u] + it.peso + dist_ate_N[it.v] == d) ||
             (dist_de_1[it.v] + it.peso + dist_ate_N[it.u] == d)) {
-                dist_min.push_back(it.indice);
+                arestas_otimas.push_back(it.indice);
             }
     }
 
     // Elimina duplicatas
-    int s = dist_min.size() - 1;
+    int s = arestas_otimas.size() - 1;
     for (int i = s; i > 0; i--) {
-        if (dist_min[i] == dist_min[i - 1]) {
-            dist_min.erase(dist_min.begin() + i);
+        if (arestas_otimas[i] == arestas_otimas[i - 1]) {
+            arestas_otimas.erase(arestas_otimas.begin() + i);
         }
     }
 
-    return dist_min;
+    return arestas_otimas;
 }
 
+Aresta Grafo::removeAresta(int _indice) {
+    int u, v;
+    int contador_remocoes = 0;
+    Aresta a_removida;
+
+    // Atualiza o vetor de arestas
+    for (auto it = arestas.begin(); it != arestas.end(); ) {
+        if (it->indice == _indice) {
+            u = it->u; v = it->v;
+            a_removida = *it;
+            it = arestas.erase(it); // Atualiza o iterador
+            contador_remocoes++;
+
+        } else { it++; }
+    }
+    
+    // Seguranca no contador de arestas
+    if (contador_remocoes == 0) {
+        std::cerr << "ERRO: nenhuma aresta encontrada para o indice especificado " 
+                  << _indice 
+                  << std::endl;
+    } else {
+        // Atualiza adjacencias nas duas direcoes
+        for (auto it = adjacencia[v].begin(); it != adjacencia[v].end(); ) {
+            if (it->first == u) {
+                it = adjacencia[v].erase(it);
+                break;
+            } else { it++; }
+        }
+        for (auto it = adjacencia[u].begin(); it != adjacencia[u].end(); ) {
+            if (it->first == v) {
+                it = adjacencia[u].erase(it);
+                break;
+            } else { it++; }
+        }
+        numArestas -= contador_remocoes;
+    }
+
+    return a_removida; // Se nenhuma for removida, os campos estarao zerados
+}
+
+std::vector<int> Grafo::Parte3(std::vector<int> arestas_otimas, int distancia_minima) {
+    std::vector<int> arestas_criticas;
+
+    // Verifica quais arestas obtidas na parte2 
+    // reduzem o caminho de 1 a N, uma a uma
+    for (int atual : arestas_otimas) {
+        Aresta a = removeAresta(atual);
+        if (distancia_minima != CaminhoMin(1, numVertices)) {
+            arestas_criticas.push_back(atual);
+        }
+        adicionaAresta(a.v, a.u, a.peso, a.indice);
+    }
+
+    // Nao foram encontradas ruas criticas
+    if (arestas_criticas.empty()) {
+        arestas_criticas.push_back(-1);
+    }
+
+    return arestas_criticas;
+}

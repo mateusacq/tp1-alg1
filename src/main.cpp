@@ -32,6 +32,11 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl;
 
     std::cout << "Parte 3: ";
+    std::vector<int> ruas_criticas = g.Parte3(ruas_candidatas, distancia_minima);
+    for (auto it : ruas_criticas) {
+        std::cout << it << " ";
+    }
+    std::cout << std::endl;
 
     return 0;
 }
