@@ -25,9 +25,9 @@ void Grafo::adicionaAresta(TipoV v, TipoV u, int peso, int i) {
     adjacencia[u].push_back({v, peso});
 }
 
-void Grafo::leGrafo(std::ifstream &in) {
+void Grafo::leGrafo() {
     // Le dimensoes
-    in >> numVertices >> numArestas;
+    std::cin >> numVertices >> numArestas;
 
     // Redimensionamento para n + 1 pois vertices estao indexados em 1
     adjacencia.resize(numVertices + 1);
@@ -35,7 +35,7 @@ void Grafo::leGrafo(std::ifstream &in) {
     for (int i = 1; i <= numArestas; i++) {
         TipoV v, u;
         int peso;
-        in >> v >> u >> peso;
+        std::cin >> v >> u >> peso;
         adicionaAresta(v, u, peso, i);
     }
 }

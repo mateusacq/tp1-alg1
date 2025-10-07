@@ -22,7 +22,7 @@ public:
     Grafo();
     Grafo(int n, int m);
 
-    void leGrafo(std::ifstream &in);
+    void leGrafo();
     void adicionaAresta(TipoV v, TipoV u, int peso, int indice);
     Aresta removeAresta(int indice);
 
