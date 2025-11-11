@@ -3,4 +3,7 @@ Trabalho prático 1 da matéria de algoritmos, aplicando conhecimentos sobre alg
 
 Leia a documentação (doc.pdf)
 
-Execução: Execute "make all" no diretório raiz (definido no makefile) Navegue até o diretório bin recém criado (cd bin) Execute ./tp1.out
+Execução: 
+Execute, no terminal, ./tp2.out < "arquivo_de_entrada"
+
+Formato da entrada em "entrada_exemplo.txt"
